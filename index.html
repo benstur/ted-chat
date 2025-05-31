@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Talk to Ted</title>
+  <link rel="stylesheet" href="/style.css" />
+</head>
+<body>
+  <div class="chatbox">
+    <h1>🧸 Talk to Ted</h1>
+    <div id="chat-log"></div>
+    <form id="chat-form">
+      <input type="text" id="message" placeholder="Ask Ted something..." required />
+      <button type="submit">Send</button>
+    </form>
+  </div>
+
+  <script>
+    const form = document.getElementById("chat-form");
+    const chatLog = document.getElementById("chat-log");
+
+    form.addEventListener("submit", async (e) => {
+      e.preventDefault();
+      const input = document.getElementById("message");
+      const msg = input.value;
+      input.value = "";
+
+      chatLog.innerHTML += `<div class="user-msg">You: ${msg}</div>`;
+
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: msg }),
+      });
+
+      const data = await res.json();
+      chatLog.innerHTML += `<div class="ted-msg">Ted: ${data.reply}</div>`;
+      chatLog.scrollTop = chatLog.scrollHeight;
+    });
+  </script>
+</body>
+</html>
