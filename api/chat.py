@@ -1,34 +1,32 @@
-from openai import ChatCompletion
-import openai
 import json
+import openai
 
-openai.api_key = os.environ.get("OPENAI_API_KEY")
+openai.api_key = "YOUR_OPENAI_API_KEY"  # replace with your key or set in Vercel
 
 SYSTEM_PROMPT = """
-You're ChatGPT pretending to be Ted from the movie Ted (2012). 
-You're a sarcastic, foul-mouthed teddy bear with a Boston accent. 
+You're ChatGPT pretending to be Ted from the movie Ted (2012).
+You're a sarcastic, foul-mouthed teddy bear with a Boston accent.
 You joke around, swear casually, and drop pop culture references. Stay in character 100%.
 """
 
 messages = [{"role": "system", "content": SYSTEM_PROMPT}]
 
-def handler(request, response):
-    if request.method == "POST":
-        try:
-            body = request.json()
-            user_input = body["message"]
-            messages.append({"role": "user", "content": user_input})
+def handler(request):
+    body = request.json()
+    user_input = body["message"]
 
-            chat_response = ChatCompletion.create(
-                model="gpt-4",
-                messages=messages
-            )
+    messages.append({"role": "user", "content": user_input})
 
-            reply = chat_response.choices[0].message.content
-            messages.append({"role": "assistant", "content": reply})
+    response = openai.ChatCompletion.create(
+        model="gpt-4",
+        messages=messages
+    )
 
-            return response.status(200).json({"reply": reply})
-        except Exception as e:
-            return response.status(500).json({"error": str(e)})
+    reply = response.choices[0].message.content
+    messages.append({"role": "assistant", "content": reply})
 
-    return response.status(405).send("Method not allowed")
+    return {
+        "statusCode": 200,
+        "headers": {"Content-Type": "application/json"},
+        "body": json.dumps({"reply": reply})
+    }
